@@ -2,14 +2,12 @@ package com.model2.mvc.web.user;
 
 import java.util.Map;
 
-import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Required;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -37,6 +35,10 @@ public class UserRestController {
 	public UserRestController(){
 		System.out.println(this.getClass());
 	}
+	@Value("#{commonProperties['pageUnit']}")
+	int pageUnit;
+	@Value("#{commonProperties['pageSize']}")
+	int pageSize;
 	
 	@RequestMapping( value="json/getUser/{userId}", method=RequestMethod.GET )
 	public User getUser( @PathVariable String userId ) throws Exception{
@@ -61,5 +63,69 @@ public class UserRestController {
 		}
 		
 		return dbUser;
+	}
+	
+	@RequestMapping( value="json/addUser", method=RequestMethod.POST )
+	public User addUser(	@RequestBody User user,
+									HttpSession session ) throws Exception{
+	
+		System.out.println("/user/json/addUser : POST");
+		//Business Logic
+		System.out.println("::"+user);
+		userService.addUser(user);
+		
+		
+		return user;
+	}
+	
+	@RequestMapping( value="json/updateUser/{userId}", method=RequestMethod.GET )
+	public User updateUserget(	 @PathVariable String userId ,
+									HttpSession session ) throws Exception{
+	
+		System.out.println("/user/json/updateUser : GET");
+		//Business Logic
+		System.out.println("::"+userId);
+		User rtUser = userService.getUser(userId);
+		
+		
+		return rtUser;
+	}
+	
+	
+	@RequestMapping( value="json/updateUser", method=RequestMethod.POST )
+	public User updateUserpost(	 @RequestBody User user,
+									HttpSession session ) throws Exception{
+	
+		System.out.println("/user/json/updateUser : POST");
+		//Business Logic
+		System.out.println("::"+user);
+		
+		userService.updateUser(user);
+		User rtUser = userService.getUser(user.getUserId());
+		
+		
+		return rtUser;
+	}
+	
+	@RequestMapping( value="json/listUser" )
+	public Map listUser(	@RequestBody Search search,
+									HttpSession session ) throws Exception{
+
+	
+		System.out.println("/user/json/listUser ");
+		//Business Logic
+		if(search.getCurrentPage() ==0 ){
+			search.setCurrentPage(1);
+		}
+		search.setPageSize(pageSize);
+		
+		// Business logic ผ๖วเ
+		Map<String , Object> map=userService.getUserList(search);
+		
+		Page resultPage = new Page( search.getCurrentPage(), ((Integer)map.get("totalCount")).intValue(), pageUnit, pageSize);
+		System.out.println(resultPage);
+		
+		
+		return map;
 	}
 }
