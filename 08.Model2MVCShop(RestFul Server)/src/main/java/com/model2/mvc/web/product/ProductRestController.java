@@ -51,6 +51,13 @@ public class ProductRestController {
 		productService.addProduct(product);
 		
 		
+		
+		
+		
+		
+		
+		
+		
 		return product;
 	}
 	
